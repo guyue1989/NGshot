@@ -37,9 +37,6 @@ const KEYCODE_SHIFT_LEFT: number = 2047;
 const KEYCODE_SHIFT_RIGHT: number = 2048;
 const KEYCODE_CTRL_LEFT: number = 2072;
 const KEYCODE_CTRL_RIGHT: number = 2073;
-// 底部提示条在图层最下方，根 Stack 收全部指针事件；SDK 没有 stopPropagation，子控件也不
-// 吞父事件，所以从这条区域内开始的按下要让路，不能当成框选起点。
-const PANEL_VP: number = 104;
 
 // 工具条贴着选区就地显示，不另开结果窗；图标在上、说明在下，几何只在 barRect() 里算一次，
 // 摆放和“按在条上不算落笔”都读它。
@@ -217,7 +214,6 @@ struct SelectPage {
   @State scrollH: number = 0;
   @State scrollMsg: string = '';
   @State preview: image.PixelMap | null = null;
-  @StorageProp('selectStatus') status: string = '';
   // SelectAbility 发现窗口失去激活、流程还挂着时把这个序号加一，等价于按 Esc 收场。
   @StorageLink('selectAbandon') @Watch('onAbandon') abandonSeq: number = 0;
   private anchorX: number = 0;
@@ -459,9 +455,10 @@ struct SelectPage {
   private decide(): void {
     const w: number = this.pxW();
     const h: number = this.pxH();
+    // 框太窄太扁等于没框住：只点了一下没拖、或者拖歪成一条线，都算「不要这次」，直接收场。
+    // 触屏没有 Esc 也没有右键，这一处就是唯一的出口。
     if (w < 4 || h < 4) {
-      this.say(`选区太小了（${w}×${h}），拖大一点，或按 Esc 退出`);
-      this.resetBand();
+      this.cancel();
       return;
     }
     this.decided = true;
@@ -2550,8 +2547,7 @@ struct SelectPage {
     let x: number = this.left + this.wide / 2 - BAR_W / 2;
     x = Math.max(8, Math.min(this.areaW - BAR_W - 8, x));
     let y: number = this.top + this.high + 12;
-    const panelTop: number = this.areaH > PANEL_VP + 40 ? this.areaH - PANEL_VP : 0;
-    if (panelTop > 0 && y + BAR_H > panelTop - 4) {
+    if (y + BAR_H > this.areaH - 8) {
       y = this.top - BAR_H - 12;
     }
     if (y < 8) {
@@ -2563,7 +2559,7 @@ struct SelectPage {
   // 调色板贴着工具条：工具条在选区下方就往下排，在上方就往上排；两头都塞不下就夹进屏幕，
   // 宁可压住选区一角，也不能出屏点不到。
   private bottomLimit(): number {
-    return this.areaH > PANEL_VP + 40 ? this.areaH - PANEL_VP : this.areaH;
+    return this.areaH - 8;
   }
 
   private colorRect(): BarRect {
@@ -2675,8 +2671,7 @@ struct SelectPage {
     // 上一次拖字如果没收到松开（比如松在窗口外），这一次按下就把它作废，不留半截拖动状态。
     this.textDragIndex = -1;
     this.textMoved = false;
-    this.ignoring = this.inBar(x, y) || this.inEditor(x, y)
-      || (this.areaH > PANEL_VP + 40 && y > this.areaH - PANEL_VP);
+    this.ignoring = this.inBar(x, y) || this.inEditor(x, y);
     if (this.ignoring) {
       return;
     }
@@ -2963,49 +2958,6 @@ struct SelectPage {
       if (this.selVisible()) {
         this.selBar()
       }
-
-      // 底部提示条和常驻的“退出”按钮。触屏设备既没有 Esc 也没有右键，退出只靠这个按钮，所以
-      // 不能藏进任何分支。这块区域在 pressStart 里已按 y > areaH - PANEL_VP 让路，按钮上的按下
-      // 不会变成框选。
-      Row({ space: 10 }) {
-        Column({ space: 1 }) {
-          Text('拖出一块区域，松手就能标注：选个工具在框里画，画完点保存或复制')
-            .fontSize(12)
-            .fontColor('#FFF3F5F7')
-          Text('Esc 或右键退出 · 方向键微调（按住 Ctrl 5px / Shift 10px）· Ctrl+Z 撤销 · '
-            + 'Ctrl+C 复制 · Ctrl+S 保存 · 中键=这次先不自动执行')
-            .fontSize(11)
-            .fontColor('#FF9AA4AF')
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-          Text(this.status === '' ? ' ' : this.status)
-            .fontSize(11)
-            .fontColor('#FF7FB77E')
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-        }
-        .layoutWeight(1)
-        .alignItems(HorizontalAlign.Start)
-
-        // 与 selBar 同理，focusable(false)：它一出现就是页面上唯一的按钮，抢走初始焦点的话
-        // Esc 就没人接了。
-        Button('退出')
-          .fontSize(12)
-          .height(32)
-          .padding({ left: 16, right: 16 })
-          .focusable(false)
-          .backgroundColor('#FF2A313A')
-          .fontColor('#FFE9EDF2')
-          .borderRadius(6)
-          .onClick(() => {
-            this.cancel();
-          })
-      }
-      .width('100%')
-      .alignItems(VerticalAlign.Center)
-      .position({ x: 0, y: this.areaH > PANEL_VP + 40 ? this.areaH - PANEL_VP : 0 })
-      .padding(10)
-      .backgroundColor('#CC101418')
 
       // 就地打字的输入框：无底色无边框，字号和文字色与出图一致，贴在落点上，打字时看到的就是
       // 出图那段字。按在框里由 inEditor 让路，这个 SDK 上子控件不吞父事件，只能自己算；回车或

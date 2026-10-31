@@ -121,6 +121,31 @@ export struct OverviewView {
         .border({ width: 1, color: $r('app.color.ng_line') })
 
         Column({ space: 6 }) {
+          Text('怎么用')
+            .fontSize(13)
+            .fontWeight(FontWeight.Medium)
+            .fontColor($r('app.color.ng_text'))
+          Text('选区定住后，工具条里能画框、加箭头、打码、写文字，也能贴到桌面、取词、长截图；画完点「复制」或「保存」')
+            .fontSize(12)
+            .fontColor($r('app.color.ng_text_dim'))
+            .lineHeight(20)
+          Text('不想截：还没框时在画面上点一下，已经框好在选区外面点一下，当场取消；键盘上按 Esc 或点右键也一样')
+            .fontSize(12)
+            .fontColor($r('app.color.ng_text_dim'))
+            .lineHeight(20)
+          Text('方向键微调选区（按住 Ctrl 走 5 像素，Shift 走 10 像素），Ctrl+Z 撤销，Ctrl+C 复制，Ctrl+S 保存，鼠标中键＝这次框完不自动执行')
+            .fontSize(12)
+            .fontColor($r('app.color.ng_text_dim'))
+            .lineHeight(20)
+        }
+        .width('100%')
+        .padding(16)
+        .alignItems(HorizontalAlign.Start)
+        .backgroundColor($r('app.color.ng_surface'))
+        .borderRadius(12)
+        .border({ width: 1, color: $r('app.color.ng_line') })
+
+        Column({ space: 6 }) {
           Text('截到的图去哪')
             .fontSize(13)
             .fontWeight(FontWeight.Medium)

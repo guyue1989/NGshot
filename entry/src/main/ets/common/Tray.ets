@@ -13,9 +13,17 @@ const MODULE: string = 'entry';
 let added: boolean = false;
 let clickCallback: Callback<emitter.EventData> | null = null;
 
-// 托盘图标用应用图标里的“N”记号，两根圆头竖笔加一根斜笔。状态栏只收单色，白黑各一份，
-// 24px 下也只放得下字母本身，相机和圆点在这么小的尺寸会糊在一起，所以不画。
-// 字母占 10px 高（y 7~17）居中，四周留白由圆头描边填满。
+// 托盘图标用应用图标里的“N”记号。状态栏只收单色，白黑各一份。
+// 几何直接照图标生成脚本：竖笔是圆角矩形、斜笔是胶囊，坐标按 24/1024 缩放并把字母居中，
+// 所以粗细和字母本身一致。相机和圆点在 24px 下只剩一两个像素，会和笔画糊成一团，不画。
+function boxDist(x: number, y: number, cx: number, cy: number, hx: number, hy: number, r: number): number {
+  const qx: number = Math.abs(x - cx) - (hx - r);
+  const qy: number = Math.abs(y - cy) - (hy - r);
+  const ax: number = Math.max(qx, 0);
+  const ay: number = Math.max(qy, 0);
+  return Math.sqrt(ax * ax + ay * ay) + Math.min(Math.max(qx, qy), 0) - r;
+}
+
 function segDist(x: number, y: number, ax: number, ay: number, bx: number, by: number): number {
   const ex: number = bx - ax;
   const ey: number = by - ay;
@@ -31,17 +39,16 @@ function segDist(x: number, y: number, ax: number, ay: number, bx: number, by: n
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-// 24 画布里的 N：两根竖笔在 x=7/17、y 7~17，笔画半径 1.5；斜笔两头各缩进 0.6 接在竖笔上。
-// 笔画直径 3px，再粗斜笔就会贴上右竖笔、中间糊成一片，只剩一条清楚的缝。
+// 24 画布里的 N，取自图标生成脚本（1024 画布）等比缩放：竖笔半宽 2.02、半高 6.75、圆角 0.98，
+// 中心在 x=8.32/15.68、y=12；斜笔是半径 1.97 的胶囊，端点 (8.06,5.53)→(15.94,18.47)。
 // 距离场加 1px 覆盖抗锯齿，与图标生成脚本同一套算法。
 function nCoverage(x: number, y: number): number {
-  const r: number = 1.5;
-  let d: number = segDist(x, y, 7, 7, 7, 17) - r;
-  const dr: number = segDist(x, y, 17, 7, 17, 17) - r;
+  let d: number = boxDist(x, y, 8.32, 12, 2.02, 6.75, 0.98);
+  const dr: number = boxDist(x, y, 15.68, 12, 2.02, 6.75, 0.98);
   if (dr < d) {
     d = dr;
   }
-  const dd: number = segDist(x, y, 7.6, 16.4, 16.4, 7.6) - r;
+  const dd: number = segDist(x, y, 8.06, 5.53, 15.94, 18.47) - 1.97;
   if (dd < d) {
     d = dd;
   }

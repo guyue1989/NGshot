@@ -47,6 +47,8 @@ const BTN_W: number = 48;
 const BTN_H: number = 42;
 // 图标 24vp 图形、2vp 描边，向下 3vp 间距加 10vp 说明（3 个汉字 30vp，仍在 48vp 格内）。
 const ICON_VP: number = 24;
+// 提示条停留时长：够读完一句「取词 9 行，已进剪贴板」，又不会留在屏幕上挡画面。
+const TOAST_MS: number = 3000;
 
 // 画图工具选中后工具条旁展开一排常用色加一个“更多”，“更多”里是 12 色相 × 5 明度加
 // 12 级灰。色板是浮层，inBar() 必须算进去，否则在色板上按下会被当成落笔或重新框选。
@@ -213,6 +215,9 @@ struct SelectPage {
   @State scrollW: number = 0;
   @State scrollH: number = 0;
   @State scrollMsg: string = '';
+  // 一句话提示：贴着工具条显示 TOAST_MS 就自己收，屏幕上不常驻任何东西。
+  @State toast: string = '';
+  private toastTimer: number = -1;
   @State preview: image.PixelMap | null = null;
   // SelectAbility 发现窗口失去激活、流程还挂着时把这个序号加一，等价于按 Esc 收场。
   @StorageLink('selectAbandon') @Watch('onAbandon') abandonSeq: number = 0;
@@ -295,6 +300,14 @@ struct SelectPage {
   private say(line: string): void {
     ProbeLog.add(`框选层 ${line}`);
     AppStorage.setOrCreate('selectStatus', line);
+    this.toast = line;
+    if (this.toastTimer >= 0) {
+      clearTimeout(this.toastTimer);
+    }
+    this.toastTimer = setTimeout((): void => {
+      this.toastTimer = -1;
+      this.toast = '';
+    }, TOAST_MS);
   }
 
   // 图尺寸和布局区域都就绪才打这行：build 阶段的 onAreaChange 早于图片就绪，否则 kx/ky 没有意义。
@@ -323,6 +336,10 @@ struct SelectPage {
 
   aboutToDisappear(): void {
     this.stopScrollTimer();
+    if (this.toastTimer >= 0) {
+      clearTimeout(this.toastTimer);
+      this.toastTimer = -1;
+    }
     setScrollStopHook(null);
     const pm: image.PixelMap | null = this.shot;
     if (pm !== null) {
@@ -2644,6 +2661,16 @@ struct SelectPage {
     return { x: b.x, y: Math.max(8, b.y - 32), w: 160, h: 26 };
   }
 
+  // 提示条排在工具条上方，取色条占着那一行就再抬高一格；上方顶到屏幕边就翻到工具条下面。
+  private toastY(): number {
+    const b: BarRect = this.barRect();
+    const y: number = b.y - 34 - (this.hexTip !== '' ? 32 : 0);
+    if (y < 8) {
+      return Math.min(b.y + BAR_H + 8, this.bottomLimit() - 30);
+    }
+    return y;
+  }
+
   // Press/Down：只有 Move 之后才画出框，单纯点一下不会留下多余选区。按在工具条或底部提示条上
   // 什么都不做；工具已选且按在选区内则开始落笔；其余位置按下会丢掉当前框和标注，重新拖。
   private pressStart(x: number, y: number): void {
@@ -2952,6 +2979,26 @@ struct SelectPage {
             });
             this.say(`已复制 ${css}`);
           })
+      }
+
+      // 一句话提示：取词、撤销、失败原因这些没有别的出口的话，都从这里说一句，几秒后自己消失。
+      // 长截图期间窗口缩成角落面板，判定结果由面板自己显示，这里不再插一句。
+      if (this.toast !== '' && !this.scrolling && !this.scrollDone) {
+        Row() {
+          Text(this.toast)
+            .fontSize(11)
+            .fontColor('#FFE9EDF2')
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .constraintSize({ maxWidth: 620 })
+            .padding({ left: 10, right: 10, top: 6, bottom: 6 })
+            .borderRadius(8)
+            .backgroundColor('#E6101418')
+            .border({ width: 1, color: '#33FFFFFF' })
+        }
+        .width(BAR_W)
+        .justifyContent(FlexAlign.Center)
+        .position({ x: this.barRect().x, y: this.toastY() })
       }
 
       // 选中标注的那排小按钮，跟着选中笔走。

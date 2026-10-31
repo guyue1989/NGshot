@@ -133,10 +133,19 @@ export struct OverviewView {
             .fontSize(12)
             .fontColor($r('app.color.ng_text_dim'))
             .lineHeight(20)
-          Text('方向键微调选区（按住 Ctrl 走 5 像素，Shift 走 10 像素），Ctrl+Z 撤销，Ctrl+C 复制，Ctrl+S 保存，鼠标中键＝这次框完不自动执行')
+          Text('框和改：Ctrl+A 直接框住整屏，方向键微调（按住 Ctrl 一步 5 像素，Shift 一步 10 像素），'
+            + '选中某一笔后用方向键只挪它，Delete 删掉它')
             .fontSize(12)
             .fontColor($r('app.color.ng_text_dim'))
             .lineHeight(20)
+          Text('画和出图：Ctrl+Z 撤销、Ctrl+Shift+Z 或 Ctrl+Y 重做，Ctrl+C 复制、Ctrl+S 保存，'
+            + '打字时回车就是落笔，按住鼠标中键拖框这一次不执行自动动作')
+            .fontSize(12)
+            .fontColor($r('app.color.ng_text_dim'))
+            .lineHeight(20)
+          Text('完整的按键清单在左边「快捷键」那一页')
+            .fontSize(11)
+            .fontColor($r('app.color.ng_text_faint'))
         }
         .width('100%')
         .padding(16)

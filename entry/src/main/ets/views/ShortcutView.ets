@@ -11,6 +11,33 @@ const NUM_KEYS: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 const FN_KEYS: string[] = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'];
 const LETTER_KEYS: string[] = KEY_LABELS.slice(0, 26);
 
+// 框选层自己认的键：不能配置，但比能配置的那个用得频繁，所以和全局快捷键放在同一页。
+// 每行左边是键名，右边是它做什么；改这里的文案不用动 SelectPage。
+const FIXED_KEYS: string[][] = [
+  ['Esc', '取消这次截图。正在打字时先丢掉这一段，长截图采集中则是收尾出图'],
+  ['鼠标右键', '同上，取消这次截图'],
+  ['点一下', '还没框时在画面上点一下、框好之后在选区外面点一下，都是取消。触屏没有 Esc 和右键，只能靠它'],
+  ['Ctrl + A', '框住整个屏幕'],
+  ['方向键', '微调：选中了某一笔就挪那一笔，没选中就挪选区'],
+  ['Ctrl + 方向键', '微调一步 5 像素'],
+  ['Shift + 方向键', '微调一步 10 像素'],
+  ['Ctrl + Z', '撤销一步'],
+  ['Ctrl + Shift + Z', '重做一步'],
+  ['Ctrl + Y', '重做一步，和上面等价'],
+  ['Delete', '删掉选中的那一笔'],
+  ['Ctrl + C', '把选区（带着画上去的标注）复制进剪贴板'],
+  ['Ctrl + S', '把选区保存成文件'],
+  ['Enter', '打字时回车就是落笔，和点框外面一样'],
+  ['鼠标中键', '按住它拖框，这一次框完不执行自动动作']
+];
+
+// 贴到桌面上的那扇小窗认的键。
+const PIN_KEYS: string[][] = [
+  ['左键按住拖', '把这扇贴图窗拖走'],
+  ['右键', '弹菜单：复制、保存、取词、关闭'],
+  ['Esc', '关掉这扇窗；取词结果面板开着时先收面板']
+];
+
 // 快捷键由修饰键（1 到 2 个）加主键组成，主键限 A~Z、0~9、F1~F12。
 // 生效走 applyHotkey，先订新的，订不上自动退回旧的，失败时只负责把原因说清楚。
 @Component
@@ -275,6 +302,67 @@ export struct ShortcutView {
             }, (k: string) => `f-${k}`)
           }
           .width('100%')
+        }
+        .width('100%')
+        .padding(16)
+        .alignItems(HorizontalAlign.Start)
+        .backgroundColor($r('app.color.ng_surface'))
+        .borderRadius(12)
+        .border({ width: 1, color: $r('app.color.ng_line') })
+
+        Column({ space: 6 }) {
+          Text('框选层里的固定按键')
+            .fontSize(13)
+            .fontWeight(FontWeight.Medium)
+            .fontColor($r('app.color.ng_text'))
+          Text('这些改不了，是画面定住之后那一层自己认的键；上面那个全局快捷键只负责把画面定住')
+            .fontSize(11)
+            .fontColor($r('app.color.ng_text_faint'))
+          ForEach(FIXED_KEYS, (row: string[], i: number) => {
+            Row({ space: 10 }) {
+              Text(row[0])
+                .fontSize(12)
+                .fontFamily('monospace')
+                .fontColor($r('app.color.ng_text'))
+                .width(132)
+              Text(row[1])
+                .fontSize(12)
+                .fontColor($r('app.color.ng_text_dim'))
+                .lineHeight(19)
+                .layoutWeight(1)
+            }
+            .width('100%')
+            .alignItems(VerticalAlign.Top)
+          }, (row: string[], i: number) => `fx-${i}`)
+        }
+        .width('100%')
+        .padding(16)
+        .alignItems(HorizontalAlign.Start)
+        .backgroundColor($r('app.color.ng_surface'))
+        .borderRadius(12)
+        .border({ width: 1, color: $r('app.color.ng_line') })
+
+        Column({ space: 6 }) {
+          Text('贴图窗里的固定按键')
+            .fontSize(13)
+            .fontWeight(FontWeight.Medium)
+            .fontColor($r('app.color.ng_text'))
+          ForEach(PIN_KEYS, (row: string[], i: number) => {
+            Row({ space: 10 }) {
+              Text(row[0])
+                .fontSize(12)
+                .fontFamily('monospace')
+                .fontColor($r('app.color.ng_text'))
+                .width(132)
+              Text(row[1])
+                .fontSize(12)
+                .fontColor($r('app.color.ng_text_dim'))
+                .lineHeight(19)
+                .layoutWeight(1)
+            }
+            .width('100%')
+            .alignItems(VerticalAlign.Top)
+          }, (row: string[], i: number) => `pk-${i}`)
         }
         .width('100%')
         .padding(16)

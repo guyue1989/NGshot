@@ -18,15 +18,12 @@
         "description": "$string:entryability_desc",
         "icon": "$media:app_icon",
         "label": "$string:app_name",
+        // 冷启动直接挂到状态栏，不打开主界面，所以启动页也关掉：否则开机那一下会闪一张图标页。
+        // 挂了 startWindow 之后这两个字段在显示上不再起作用，但 schema 仍按必填校验，删不掉。
+        "startWindow": "$profile:start_window",
         "startWindowIcon": "$media:app_icon",
         "startWindowBackground": "$color:start_window_background",
         "launchType": "singleton",
-        // taskKeeping 是 PC/2in1 的后台计算类型（API 20 起对三方开放），窗口收进状态栏后靠它
-        // 保持进程存活，全局快捷键才继续可用。dataTransfer 是代码里的兜底模式。
-        "backgroundModes": [
-          "taskKeeping",
-          "dataTransfer"
-        ],
         "exported": true,
         "skills": [
           {
@@ -38,6 +35,23 @@
             ]
           }
         ]
+      },
+      {
+        // 只用来给进程绑定状态栏图标（保活），没有界面、没有 home skill，应用自己能拉起来。
+        // 不能省：指定 processMode 重复拉起一个正在运行的 singleton 会返回 16000068，
+        // 所以绑定目标必须是一个平时不跑的能力；multiton 保证每次重新绑定都能起新实例。
+        "name": "BackGroundAbility",
+        "srcEntry": "./ets/entryability/BackGroundAbility.ets",
+        "description": "$string:backgroundability_desc",
+        "icon": "$media:app_icon",
+        "label": "$string:app_name",
+        // 这三个字段成组出现：schema 把 startWindowIcon / startWindowBackground 当必填，
+        // 而 startWindow 指向的 REQUIRED_HIDE 才决定它实际上不闪启动页。
+        "startWindow": "$profile:start_window",
+        "startWindowIcon": "$media:app_icon",
+        "startWindowBackground": "$color:start_window_background",
+        "launchType": "multiton",
+        "exported": false
       },
       {
         // 结果窗，刻意不做 EntryAbility 的子窗：宿主被 hideAbility() 收起后，其子窗虽有 id，
@@ -103,18 +117,6 @@
             "SelectAbility"
           ],
           "when": "inuse"
-        }
-      },
-      {
-        // 声明带 reason 和 usedScene，不在运行时申请。它支撑 backgroundTaskManager.startBackgroundRunning()，
-        // 窗口收进状态栏后快捷键订阅才能继续存活。
-        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
-        "reason": "$string:background_running_reason",
-        "usedScene": {
-          "abilities": [
-            "EntryAbility"
-          ],
-          "when": "always"
         }
       },
       {

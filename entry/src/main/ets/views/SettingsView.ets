@@ -268,7 +268,7 @@ export struct SettingsView {
             .fontSize(13)
             .fontWeight(FontWeight.Medium)
             .fontColor($r('app.color.ng_text'))
-          Text('工具栏上点「保存」时用的格式')
+          Text('工具栏上点「保存」时写下的文件格式')
             .fontSize(11)
             .fontColor($r('app.color.ng_text_faint'))
           Row() {
@@ -327,6 +327,9 @@ export struct SettingsView {
             .fontSize(13)
             .fontWeight(FontWeight.Medium)
             .fontColor($r('app.color.ng_text'))
+          Text('这里只定压缩方式，粘出来存成 PNG 还是 JPEG 由对方应用决定')
+            .fontSize(11)
+            .fontColor($r('app.color.ng_text_faint'))
           Row() {
             Text('格式')
               .fontSize(13)

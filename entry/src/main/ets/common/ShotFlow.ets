@@ -4,7 +4,6 @@ import { abilityAccessCtrl, bundleManager, common, Permissions, Want } from '@ki
 import { BusinessError } from '@kit.BasicServicesKit';
 import { ShotLog, canonicalPng, setShotBuffer, beginScreenBuffer, endScreenBuffer, dropScreenBuffer,
   setCaptureMap, disposeShot } from './ShotService';
-import { startKeepAlive, stopKeepAlive } from './KeepAlive';
 
 export const BUNDLE_NAME: string = 'com.niangao.ngshot';
 const RESULT_ABILITY: string = 'ResultAbility';
@@ -43,7 +42,6 @@ async function restoreIfStartedVisible(log: ShotLog): Promise<void> {
     await ctx.showAbility();
     AppStorage.setOrCreate('abilityHidden', false);
     log('这一张是从可见状态发起的，主窗已放回来');
-    void stopKeepAlive(log, ctx);
   } catch (e) {
     const err = e as BusinessError;
     log(`主窗放回来失败 code=${err.code} msg=${err.message}`);
@@ -117,8 +115,6 @@ async function hideSelf(log: ShotLog, ctx: common.UIAbilityContext): Promise<boo
     await ctx.hideAbility();
     AppStorage.setOrCreate('abilityHidden', true);
     log('主窗已 hideAbility 收起');
-    // 收起后进程要在后台等下一次热键或托盘点击，没有长时任务会被系统挂起，热键随之失效。
-    void startKeepAlive(log, ctx);
     return true;
   } catch (e) {
     const err = e as BusinessError;
@@ -255,7 +251,6 @@ export async function requestTrayCapture(log: ShotLog, ctx: common.UIAbilityCont
       await ctx.hideAbility();
       AppStorage.setOrCreate('abilityHidden', true);
       log('主窗还在屏上，先 hideAbility 收起，这一张不拍本应用');
-      void startKeepAlive(log, ctx);
     } catch (e) {
       const err = e as BusinessError;
       log(`hideAbility 失败 code=${err.code} msg=${err.message}，这一张会带上本应用界面`);
@@ -311,7 +306,6 @@ export async function captureForTrayOverlay(log: ShotLog, ctx: common.UIAbilityC
           await main.hideAbility();
           AppStorage.setOrCreate('abilityHidden', true);
           log('主窗还在屏上，先 hideAbility 收起，这一张不拍本应用');
-          void startKeepAlive(log, main);
         } catch (e) {
           const err = e as BusinessError;
           log(`hideAbility 失败 code=${err.code} msg=${err.message}，这一张会带上本应用界面`);

@@ -1,0 +1,32 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "年槌糕Shot 主模块"
+    },
+    {
+      "name": "entryability_desc",
+      "value": "年槌糕Shot 主界面"
+    },
+    {
+      "name": "resultability_desc",
+      "value": "截图结果窗"
+    },
+    {
+      "name": "selectability_desc",
+      "value": "全屏框选层"
+    },
+    {
+      "name": "pinability_desc",
+      "value": "贴图浮窗"
+    },
+    {
+      "name": "screen_capture_reason",
+      "value": "用于截取屏幕内容以进行框选、标注和文字识别"
+    },
+    {
+      "name": "background_running_reason",
+      "value": "用于窗口收起后保持进程常驻状态栏，让 Ctrl+1 截图快捷键随时可用"
+    }
+  ]
+}

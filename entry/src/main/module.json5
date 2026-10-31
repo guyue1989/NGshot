@@ -1,0 +1,131 @@
+{
+  "module": {
+    "name": "entry",
+    "type": "entry",
+    "description": "$string:module_desc",
+    "mainElement": "EntryAbility",
+    // 仅 2in1：pick() 文档标注为 2in1 独占，capture() 和 WINDOW_TOPMOST 同样只在 PC/2in1 上可用。
+    "deviceTypes": [
+      "2in1"
+    ],
+    "deliveryWithInstall": true,
+    "installationFree": false,
+    "pages": "$profile:main_pages",
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        "srcEntry": "./ets/entryability/EntryAbility.ets",
+        "description": "$string:entryability_desc",
+        "icon": "$media:app_icon",
+        "label": "$string:app_name",
+        "startWindowIcon": "$media:app_icon",
+        "startWindowBackground": "$color:start_window_background",
+        "launchType": "singleton",
+        // taskKeeping 是 PC/2in1 的后台计算类型（API 20 起对三方开放），窗口收进状态栏后靠它
+        // 保持进程存活，全局快捷键才继续可用。dataTransfer 是代码里的兜底模式。
+        "backgroundModes": [
+          "taskKeeping",
+          "dataTransfer"
+        ],
+        "exported": true,
+        "skills": [
+          {
+            "entities": [
+              "entity.system.home"
+            ],
+            "actions": [
+              "action.system.home"
+            ]
+          }
+        ]
+      },
+      {
+        // 结果窗，刻意不做 EntryAbility 的子窗：宿主被 hideAbility() 收起后，其子窗虽有 id，
+        // 但 globalDisplayRect 为 0x0，不上屏。没有 home skill，只有应用自己能拉起来；
+        // 未配 process 字段，与 EntryAbility 同进程，页面据此读取 ShotService 里的原始 PNG 字节。
+        "name": "ResultAbility",
+        "srcEntry": "./ets/entryability/ResultAbility.ets",
+        "description": "$string:resultability_desc",
+        "icon": "$media:app_icon",
+        "label": "$string:app_name",
+        "startWindowIcon": "$media:app_icon",
+        "startWindowBackground": "$color:start_window_background",
+        // 改用 startWindow 之后，这两个字段在 ResultAbility 上不再生效（官方说明）；留着只为
+        // 配置本身可读，也不影响其他形态。
+        "startWindow": "$profile:start_window",
+        "launchType": "singleton",
+        "exported": false
+      },
+      {
+        // 全屏框选层，自绘而不用系统 picker：screenshot.pick() 可能在系统截图服务里留下会话，
+        // 只有重启才能清掉。独立能力的原因同 ResultAbility，宿主收起时子窗的 globalDisplayRect
+        // 为 0x0。同进程，页面从 ShotService 读取快照字节。
+        "name": "SelectAbility",
+        "srcEntry": "./ets/entryability/SelectAbility.ets",
+        "description": "$string:selectability_desc",
+        "icon": "$media:app_icon",
+        "label": "$string:app_name",
+        "startWindowIcon": "$media:app_icon",
+        "startWindowBackground": "$color:start_window_background",
+        // 框选层要求按下 Ctrl+1 立刻显示冻结快照，而系统启动页会先闪一下应用图标，所以用
+        // REQUIRED_HIDE 关掉它（API 20+，2in1 与平板自由多窗生效）。
+        "startWindow": "$profile:start_window",
+        "launchType": "singleton",
+        "exported": false
+      },
+      {
+        // 贴图窗。launchType 为 standard 即多实例，每张贴图独占实例和窗口，屏幕上才能同时存在多张。
+        // 独立能力的原因同前两者，宿主收起时子窗不会上屏；同进程，字节走 PinService 的模块 Map。
+        // 置顶在这里可用：子窗会被拒（1300004），TYPE_FLOAT 需要受限权限（201），而这是能力的
+        // 主窗口，允许 setWindowTopmost()，PinAbility 在隐藏装饰后调用它。
+        "name": "PinAbility",
+        "srcEntry": "./ets/entryability/PinAbility.ets",
+        "description": "$string:pinability_desc",
+        "icon": "$media:app_icon",
+        "label": "$string:app_name",
+        "startWindowIcon": "$media:app_icon",
+        "startWindowBackground": "$color:start_window_background",
+        // 贴图窗也关启动页：否则每贴一张都会先在屏幕上闪一下图标。
+        "startWindow": "$profile:start_window",
+        "launchType": "standard",
+        "exported": false
+      }
+    ],
+    "requestPermissions": [
+      {
+        // normal 级、user_grant、API 14 起、PC/2in1，screenshot.capture() 需要它。
+        // 托盘左键那条路由 SelectAbility 自己拍，所以两个能力都要列上。
+        "name": "ohos.permission.CUSTOM_SCREEN_CAPTURE",
+        "reason": "$string:screen_capture_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility",
+            "SelectAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        // 声明带 reason 和 usedScene，不在运行时申请。它支撑 backgroundTaskManager.startBackgroundRunning()，
+        // 窗口收进状态栏后快捷键订阅才能继续存活。
+        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
+        "reason": "$string:background_running_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "always"
+        }
+      },
+      {
+        // normal 级、system_grant、API 13 起、PC/2in1，setWindowTopmost() 需要它。
+        "name": "ohos.permission.WINDOW_TOPMOST"
+      },
+      {
+        // normal 级、system_grant、API 11 起，让 DocumentViewPicker 的目录授权跨重启保留
+        // （fileShare.persistPermission）。属受限权限，调试签名不校验 ACL，裸声明即可安装。
+        "name": "ohos.permission.FILE_ACCESS_PERSIST"
+      }
+    ]
+  }
+}

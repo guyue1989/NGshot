@@ -1,0 +1,8 @@
+{
+  "src": [
+    "pages/Main",
+    "pages/ShotPage",
+    "pages/SelectPage",
+    "pages/PinWindowPage"
+  ]
+}

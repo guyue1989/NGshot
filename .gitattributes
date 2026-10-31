@@ -1,0 +1,24 @@
+# ---- 换行符：仓库统一 LF ----
+# 不带 eol 的 text=auto 只会把仓库里的换行统一，checkout 时仍按本机 core.autocrlf 转成 CRLF；
+# 写上 eol=lf 才会在 Windows 上也落成 LF，改一行就只有一行的 diff。
+* text=auto eol=lf
+
+# ---- 二进制：不做换行转换，也不尝试合并 ----
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.hap  binary
+*.hsp  binary
+*.har  binary
+*.app  binary
+*.p12  binary
+*.cer  binary
+*.p7b  binary
+
+# ---- Windows 脚本保留 CRLF，否则 cmd 可能不认 ----
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf

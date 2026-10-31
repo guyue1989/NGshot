@@ -1,0 +1,10 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "年槌糕Shot 主模块",
+  "main": "",
+  "author": "niangao",
+  "license": "Apache-2.0",
+  "dependencies": {},
+  "devDependencies": {}
+}

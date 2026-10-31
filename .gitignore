@@ -1,0 +1,53 @@
+# ---- 构建产物 ----
+/build
+**/build
+/.hvigor
+**/.hvigor
+**/oh_modules
+**/node_modules
+**/.preview
+/.appanalyzer
+.cxx
+**/.test
+*.hap
+*.hsp
+*.har
+*.app
+*.stackdump
+
+# ---- 本机签名与敏感配置：绝不入库 ----
+# 带签名的构建配置（含证书、profile、口令），模板见 build-profile.example.json5
+/build-profile.json5
+# AGC 配置文件里带客户端密钥 / API 密钥
+**/agconnect-services.json
+local.properties
+signature/
+*.p12
+*.cer
+*.csr
+*.p7b
+*.jks
+*.keystore
+*.pem
+*.key
+
+# ---- IDE / 编辑器 ----
+/.idea
+/.vscode
+*.iml
+.bitfun
+.deveco
+/.clangd
+/.clang-format
+/.clang-tidy
+
+# ---- 日志与系统垃圾 ----
+*.log
+.DS_Store
+Thumbs.db
+
+# ---- 本机文档 ----
+/docs/
+
+# ---- 本机调试残留 ----
+/store_probe/

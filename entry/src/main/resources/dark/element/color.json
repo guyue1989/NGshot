@@ -1,0 +1,56 @@
+{
+  "color": [
+    {
+      "name": "ng_bg",
+      "value": "#101418"
+    },
+    {
+      "name": "ng_surface",
+      "value": "#161A1F"
+    },
+    {
+      "name": "ng_surface_alt",
+      "value": "#2A313A"
+    },
+    {
+      "name": "ng_line",
+      "value": "#2C333B"
+    },
+    {
+      "name": "ng_text",
+      "value": "#F3F5F7"
+    },
+    {
+      "name": "ng_text_dim",
+      "value": "#9AA4AF"
+    },
+    {
+      "name": "ng_text_faint",
+      "value": "#6B7480"
+    },
+    {
+      "name": "ng_accent",
+      "value": "#2F6C49"
+    },
+    {
+      "name": "ng_accent_text",
+      "value": "#5BB98B"
+    },
+    {
+      "name": "ng_on_accent",
+      "value": "#E9EDF2"
+    },
+    {
+      "name": "ng_accent_soft",
+      "value": "#23352B"
+    },
+    {
+      "name": "ng_ok",
+      "value": "#7FB77E"
+    },
+    {
+      "name": "ng_danger",
+      "value": "#E2776F"
+    }
+  ]
+}

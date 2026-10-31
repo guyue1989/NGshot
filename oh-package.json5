@@ -1,0 +1,8 @@
+{
+  "modelVersion": "6.0.0",
+  "name": "ngshot",
+  "version": "1.0.0",
+  "description": "年槌糕Shot - 鸿蒙 PC 截图工具",
+  "dependencies": {},
+  "devDependencies": {}
+}

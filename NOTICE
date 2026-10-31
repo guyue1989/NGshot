@@ -1,0 +1,9 @@
+年槌糕Shot（NGShot）
+Copyright 2026 niangao
+
+本工程以 Apache License 2.0 授权，全文见 LICENSE。
+
+工程为独立的 ArkTS 实现，不含第三方开源代码。功能清单与交互形态参考了
+eSearch（https://github.com/xushengfeng/eSearch）的公开特性表；长截图的帧间匹配
+思路亦受其公开实现（GPL-3.0）启发，本工程按 ArkTS 重写，未复制其代码。图标与
+名称均为自有。
